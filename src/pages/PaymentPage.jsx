@@ -1,0 +1,140 @@
+import { useLocation } from "react-router-dom";
+import { useState } from "react";
+import { supabase } from "../supabaseClient";
+import { getCart } from "../services/productService";
+
+export default function PaymentPage() {
+  const location = useLocation();
+  const deliveryInfo = location.state || {};
+  const cartItems = getCart();
+  const cartTotal = cartItems.reduce(
+    (sum, item) => sum + Number(item.price || 0) * Number(item.quantity || 0),
+    0
+  );
+  const deliveryFee =
+    deliveryInfo.deliveryType === "delivery"
+      ? Number(deliveryInfo.deliveryPrice || 0)
+      : 0;
+  const payableTotal = cartTotal + deliveryFee;
+
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const handlePayment = async () => {
+    setError("");
+    setLoading(true);
+
+    try {
+      const {
+        data: { session },
+        error: sessionError,
+      } = await supabase.auth.getSession();
+
+      if (sessionError || !session?.user) {
+        setError("Please log in to continue with payment.");
+        setLoading(false);
+        return;
+      }
+
+      const { data: profile, error: profileError } = await supabase
+        .from("profiles")
+        .select("phone, full_name")
+        .eq("user_id", session.user.id)
+        .limit(1);
+
+      if (profileError) {
+        console.error("Profile fetch error:", profileError);
+        setError(`Unable to load your profile: ${profileError.message}`);
+        setLoading(false);
+        return;
+      }
+
+      const userProfile = profile?.[0] || null;
+      const profilePhone = userProfile?.phone?.trim() || "";
+      if (!profilePhone) {
+        setError(
+          "Your account does not have a phone number in profile. Please update your profile."
+        );
+        setLoading(false);
+        return;
+      }
+
+      const customerName =
+        userProfile?.full_name ||
+        session.user.user_metadata?.full_name ||
+        session.user.email ||
+        "Customer";
+      const customerEmail = session.user.email || "";
+
+      if (!Array.isArray(cartItems) || cartItems.length === 0) {
+        setError("Your cart is empty.");
+        setLoading(false);
+        return;
+      }
+
+      const res = await fetch("/api/payments/initialize", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          phone: profilePhone,
+          customerName,
+          customerEmail,
+          deliveryInfo: {
+            ...deliveryInfo,
+            deliveryPrice: deliveryFee,
+          },
+          cartItems,
+        }),
+      });
+
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(data?.message || "Payment initialization failed.");
+      }
+
+      // Redirect user to Paystack checkout
+      window.location.href = data.authorization_url;
+    } catch (err) {
+      console.error(err);
+      setError(err.message || "Payment failed. Please try again.");
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="max-w-md mx-auto p-6">
+      <h1 className="text-2xl font-bold mb-4">Payment</h1>
+
+      <p className="mb-4 text-sm">
+        Delivery to:{" "}
+        <strong>{deliveryInfo.address || "No address selected"}</strong>
+        <br />
+        City: <strong>{deliveryInfo.city || "-"}</strong>
+      </p>
+
+      <div className="mb-4 text-sm space-y-1">
+        <p>Cart Total: <strong>Ksh {cartTotal}</strong></p>
+        <p>Delivery Fee: <strong>Ksh {deliveryFee}</strong></p>
+        <p>Total Payable: <strong>Ksh {payableTotal}</strong></p>
+      </div>
+
+      <p className="mb-4 text-sm">
+        The phone number from your profile will be used for payment.
+      </p>
+
+      {error && <p className="text-red-500 text-sm mb-3">{error}</p>}
+
+      <button
+        onClick={handlePayment}
+        disabled={loading}
+        className={`w-full py-2 rounded text-white ${
+          loading
+            ? "bg-gray-400 cursor-not-allowed"
+            : "bg-green-500 hover:bg-green-600"
+        }`}
+      >
+        {loading ? "Redirecting to payment..." : "Pay Now"}
+      </button>
+    </div>
+  );
+}
