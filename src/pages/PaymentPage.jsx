@@ -3,6 +3,11 @@ import { useState } from "react";
 import { supabase } from "../supabaseClient";
 import { getCart } from "../services/productService";
 
+const apiBaseUrl = (import.meta.env.VITE_API_BASE_URL || "").replace(/\/$/, "");
+const initializePaymentUrl = apiBaseUrl
+  ? `${apiBaseUrl}/api/payments/initialize`
+  : "/api/payments/initialize";
+
 export default function PaymentPage() {
   const location = useLocation();
   const deliveryInfo = location.state || {};
@@ -72,7 +77,7 @@ export default function PaymentPage() {
         return;
       }
 
-      const res = await fetch("/api/payments/initialize", {
+      const res = await fetch(initializePaymentUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
