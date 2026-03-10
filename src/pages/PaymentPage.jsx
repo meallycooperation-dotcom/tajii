@@ -1,5 +1,5 @@
+import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
-import { useState } from "react";
 import { supabase } from "../supabaseClient";
 import { getCart } from "../services/productService";
 
@@ -24,6 +24,18 @@ export default function PaymentPage() {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [sessionUser, setSessionUser] = useState(null);
+
+  useEffect(() => {
+    const loadSession = async () => {
+      const {
+        data: { session },
+        error,
+      } = await supabase.auth.getSession();
+      if (!error) setSessionUser(session?.user || null);
+    };
+    loadSession();
+  }, []);
 
   const handlePayment = async () => {
     setError("");
@@ -71,9 +83,17 @@ export default function PaymentPage() {
         "Customer";
       const customerEmail =
         session.user.email ||
-        userProfile?.email ||
         session.user.user_metadata?.email ||
+        userProfile?.email ||
         "";
+
+      if (!customerEmail) {
+        setError(
+          "We could not read your email from Supabase. Update your profile/email before continuing."
+        );
+        setLoading(false);
+        return;
+      }
 
       if (!Array.isArray(cartItems) || cartItems.length === 0) {
         setError("Your cart is empty.");
@@ -131,6 +151,11 @@ export default function PaymentPage() {
         The phone number from your profile will be used for payment.
       </p>
 
+      {sessionUser && (
+        <p className="text-xs text-slate-400">
+          Session email: {sessionUser.email || "not provided"}
+        </p>
+      )}
       {error && <p className="text-red-500 text-sm mb-3">{error}</p>}
 
       <button
