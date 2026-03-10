@@ -10,35 +10,21 @@ export default function LoginForm() {
   const [loading, setLoading] = useState(false);
 
   const handleLogin = async (e) => {
-    e.preventDefault(); // prevent page reload
+    e.preventDefault();
     setError("");
-    console.log("Login attempt with:", email); // debug email
 
     try {
       setLoading(true);
-
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
-      // 🔹 Log the raw Supabase response
-      console.log("Supabase response:", { data, error });
-
-      if (error) {
-        console.error("Login error:", error); // 🔹 Log error
-        throw error;
-      }
-
-      if (!data?.session) {
-        const msg = "Login failed. Check your email/password or confirm your email.";
-        console.error(msg); // 🔹 Log session error
-        throw new Error(msg);
-      }
+      if (error) throw error;
+      if (!data?.session) throw new Error("Login failed. Check your credentials.");
 
       navigate("/account");
     } catch (err) {
-      console.error("Caught login error:", err); // 🔹 Another console log for full stack trace
       setError(err.message);
     } finally {
       setLoading(false);
@@ -46,42 +32,62 @@ export default function LoginForm() {
   };
 
   return (
-    <div className="max-w-md mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-4">Login</h1>
+    <div className="min-h-screen bg-slate-950 flex items-center justify-center p-6">
+      <div className="relative w-full max-w-md rounded-3xl border border-white/10 bg-slate-900/70 shadow-2xl shadow-slate-900/50 overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-slate-900/70 to-slate-800 opacity-60 pointer-events-none" />
+        <div className="relative space-y-6 p-8">
+          <div className="space-y-2">
+            <p className="text-xs font-semibold uppercase tracking-[0.4em] text-slate-500">
+              Tajii
+            </p>
+            <h1 className="text-3xl font-semibold text-white">Sign in</h1>
+            <p className="text-sm text-slate-400">
+              Access your orders, save favorites, and proceed with checkout quickly.
+            </p>
+          </div>
 
-      {error && <p className="text-red-600 mb-3">{error}</p>}
+          {error && (
+            <div className="rounded-2xl border border-red-500/50 bg-red-500/10 px-3 py-2 text-sm text-red-200">
+              {error}
+            </div>
+          )}
 
-      <form onSubmit={handleLogin} className="space-y-3">
-        <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          className="input"
-          required
-        />
+          <form onSubmit={handleLogin} className="space-y-4">
+            <input
+              type="email"
+              placeholder="Email address"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="input w-full bg-slate-800 text-white border-slate-700 focus:border-emerald-400 focus:ring-emerald-400"
+              required
+            />
 
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          className="input"
-          required
-        />
+            <input
+              type="password"
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="input w-full bg-slate-800 text-white border-slate-700 focus:border-emerald-400 focus:ring-emerald-400"
+              required
+            />
 
-        <button
-          type="submit"
-          disabled={loading}
-          className="btn-primary w-full"
-        >
-          {loading ? "Logging in..." : "Login"}
-        </button>
-      </form>
+            <button
+              type="submit"
+              disabled={loading}
+              className="btn-primary w-full bg-gradient-to-r from-emerald-500 to-sky-500 text-base shadow-lg shadow-emerald-500/30"
+            >
+              {loading ? "Logging in..." : "Login"}
+            </button>
+          </form>
 
-      <p className="text-sm mt-4">
-        Don’t have an account? <Link to="/signup" className="underline">Register</Link>
-      </p>
+          <p className="text-sm text-slate-400">
+            Don’t have an account?{" "}
+            <Link to="/signup" className="text-emerald-300 hover:text-emerald-200">
+              Create one
+            </Link>
+          </p>
+        </div>
+      </div>
     </div>
   );
 }
