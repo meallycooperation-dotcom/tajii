@@ -136,44 +136,78 @@ export default function PaymentPage() {
   };
 
   return (
-    <div className="max-w-md mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-4">Payment</h1>
+    <div className="min-h-screen bg-white px-4 py-12 text-slate-900">
+      <div className="mx-auto flex max-w-3xl flex-col gap-6">
+        <header className="text-center text-slate-900">
+          <p className="text-xs uppercase tracking-[0.5em] text-slate-400">
+            Secure Checkout
+          </p>
+          <h1 className="mt-2 text-3xl font-bold">Confirm your payment</h1>
+          <p className="mt-1 text-sm text-slate-500">
+            All charges are processed securely via Paystack.
+          </p>
+        </header>
 
-      <p className="mb-4 text-sm">
-        Delivery to:{" "}
-        <strong>{deliveryInfo.address || "No address selected"}</strong>
-        <br />
-        City: <strong>{deliveryInfo.city || "-"}</strong>
-      </p>
+        <section className="rounded-3xl border border-slate-100 bg-white/80 p-6 shadow-2xl shadow-slate-200/50 backdrop-blur-sm">
+          <div className="mb-5 flex items-center justify-between">
+            <h2 className="text-lg font-semibold text-slate-900">Delivery</h2>
+            <span className="text-xs uppercase tracking-[0.4em] text-slate-400">
+              {deliveryInfo.deliveryType || "Pickup"}
+            </span>
+          </div>
+          <p className="text-sm text-slate-600">
+            {deliveryInfo.address || "No address selected"}
+          </p>
+          <p className="text-sm text-slate-500">
+            City: {deliveryInfo.city || "Not set"}
+          </p>
+        </section>
 
-      <div className="mb-4 text-sm space-y-1">
-        <p>Cart Total: <strong>Ksh {cartTotal}</strong></p>
-        <p>Delivery Fee: <strong>Ksh {deliveryFee}</strong></p>
-        <p>Total Payable: <strong>Ksh {payableTotal}</strong></p>
+        <section className="rounded-3xl border border-slate-100 bg-white/80 p-6 shadow-2xl shadow-slate-200/50 backdrop-blur-sm">
+          <h2 className="text-lg font-semibold text-slate-900">Order summary</h2>
+          <div className="mt-4 space-y-3 text-sm text-slate-700">
+            <div className="flex items-center justify-between border-b border-slate-200/80 pb-2">
+              <span>Cart total</span>
+              <span className="font-semibold">Ksh {cartTotal}</span>
+            </div>
+            <div className="flex items-center justify-between border-b border-slate-200/80 pb-2">
+              <span>Delivery fee</span>
+              <span className="font-semibold">Ksh {deliveryFee}</span>
+            </div>
+            <div className="flex items-center justify-between text-lg font-bold text-slate-900">
+              <span>Total payable</span>
+              <span>Ksh {payableTotal}</span>
+            </div>
+          </div>
+        </section>
+
+        <section className="rounded-3xl border border-slate-100 bg-white/80 p-6 shadow-2xl shadow-slate-200/50 backdrop-blur-sm">
+          <p className="text-sm text-slate-600">
+            We will use the phone number on file for Paystack.
+          </p>
+          {sessionUser && (
+            <p className="mt-2 text-xs text-slate-500">
+              Session email: {sessionUser.email || "not provided"}
+            </p>
+          )}
+          {error && (
+            <p className="mt-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600">
+              {error}
+            </p>
+          )}
+          <button
+            onClick={handlePayment}
+            disabled={loading}
+            className={`mt-6 w-full rounded-2xl px-4 py-3 text-sm font-semibold text-white shadow-lg transition ${
+              loading
+                ? "cursor-not-allowed bg-slate-400"
+                : "bg-gradient-to-r from-emerald-500 to-slate-900 hover:from-emerald-600 hover:to-slate-900"
+            }`}
+          >
+            {loading ? "Redirecting to payment..." : "Pay Now"}
+          </button>
+        </section>
       </div>
-
-      <p className="mb-4 text-sm">
-        The phone number from your profile will be used for payment.
-      </p>
-
-      {sessionUser && (
-        <p className="text-xs text-slate-400">
-          Session email: {sessionUser.email || "not provided"}
-        </p>
-      )}
-      {error && <p className="text-red-500 text-sm mb-3">{error}</p>}
-
-      <button
-        onClick={handlePayment}
-        disabled={loading}
-        className={`w-full py-2 rounded text-white ${
-          loading
-            ? "bg-gray-400 cursor-not-allowed"
-            : "bg-green-500 hover:bg-green-600"
-        }`}
-      >
-        {loading ? "Redirecting to payment..." : "Pay Now"}
-      </button>
     </div>
   );
 }
