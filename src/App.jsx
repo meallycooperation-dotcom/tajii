@@ -9,6 +9,7 @@ import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import Profile from "./pages/Profile";
 import Orders from "./pages/Orders";
+import OrderDetails from "./pages/OrderDetails";
 import Inbox from "./pages/Inbox";
 import Address from "./pages/Address";
 import AccountManagement from "./pages/AccountManagement";
@@ -49,6 +50,14 @@ export default function App() {
           element={
             <ProtectedRoute>
               <Orders />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/orders/:reference"
+          element={
+            <ProtectedRoute>
+              <OrderDetails />
             </ProtectedRoute>
           }
         />

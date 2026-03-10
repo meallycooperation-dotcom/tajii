@@ -81,11 +81,21 @@ export default function Orders() {
                 dateStyle: "medium",
                 timeStyle: "short",
               });
+              const handleOpen = () => navigate(`/orders/${order.reference}`);
 
               return (
                 <article
                   key={order.reference}
-                  className="relative overflow-hidden rounded-3xl border border-white/5 bg-gradient-to-br from-slate-900 via-slate-900/70 to-slate-800 p-5 shadow-2xl shadow-slate-900/60"
+                  onClick={handleOpen}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter" || event.key === " ") {
+                      event.preventDefault();
+                      handleOpen();
+                    }
+                  }}
+                  role="button"
+                  tabIndex={0}
+                  className="relative overflow-hidden rounded-3xl border border-white/5 bg-gradient-to-br from-slate-900 via-slate-900/70 to-slate-800 p-5 shadow-2xl shadow-slate-900/60 cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2 focus:ring-offset-slate-950"
                 >
                   <div className="flex items-center justify-between text-sm text-slate-400">
                     <span>ID #{order.id}</span>

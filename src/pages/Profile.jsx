@@ -46,77 +46,106 @@ export default function Profile() {
     }
   };
 
-  if (loading) return <p className="text-center mt-10">Loading profile...</p>;
+  if (loading) return <p className="text-center mt-10 text-white">Loading profile...</p>;
 
   return (
-    <div className="max-w-md mx-auto p-6 flex flex-col min-h-screen justify-between">
-      {/* Header with Home button */}
-      <header className="mb-6 flex justify-between items-center">
-        <div>
-          <h1 className="text-2xl font-bold">
-            Welcome, {user?.full_name || user?.email}
-          </h1>
-          <p className="text-gray-600">{user?.email}</p>
+    <div className="min-h-screen bg-white px-4 py-10 text-slate-900">
+      <div className="mx-auto max-w-4xl">
+        <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white/80 shadow-2xl shadow-slate-200/50 backdrop-blur-sm">
+          <header className="flex flex-col gap-4 px-8 py-10 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="text-xs uppercase tracking-[0.5em] text-slate-500">Profile</p>
+              <h1 className="text-3xl font-bold text-slate-900">
+                Welcome, {user?.full_name || user?.email}
+              </h1>
+              <p className="text-sm text-slate-600">{user?.email}</p>
+            </div>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => navigate("/")}
+                className="rounded-full border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:text-slate-900"
+              >
+                Home
+              </button>
+              <span className="rounded-full bg-slate-900/90 px-4 py-2 text-xs font-semibold uppercase tracking-[0.4em] text-white">
+                Member
+              </span>
+            </div>
+          </header>
+
+          <main className="space-y-6 px-6 pb-8">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="rounded-2xl border border-white/60 bg-white/70 p-4 shadow-inner">
+                <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Orders</p>
+                <p className="text-2xl font-semibold text-slate-900">
+                  Tap to view & manage
+                </p>
+                <button
+                  onClick={() => navigate("/orders")}
+                  className="mt-4 w-full rounded-2xl border border-emerald-500/70 bg-emerald-500/10 px-3 py-2 text-sm font-semibold text-emerald-700 hover:bg-emerald-500/20"
+                >
+                  View orders
+                </button>
+              </div>
+              <div className="rounded-2xl border border-white/60 bg-white/70 p-4 shadow-inner">
+                <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Inbox</p>
+                <p className="text-2xl font-semibold text-slate-900">
+                  Stay in the loop
+                </p>
+                <button
+                  onClick={() => navigate("/inbox")}
+                  className="mt-4 w-full rounded-2xl border border-slate-700/40 bg-slate-900/80 px-3 py-2 text-sm font-semibold text-white hover:bg-slate-900"
+                >
+                  Open inbox
+                </button>
+              </div>
+            </div>
+
+            <div className="rounded-3xl border border-white/60 bg-white/70 p-4 shadow-lg shadow-slate-900/30">
+              <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Quick links</p>
+              <div className="mt-3 grid gap-3 text-sm text-slate-700 sm:grid-cols-2">
+                <button
+                  onClick={() => navigate("/address")}
+                  className="flex items-center justify-between rounded-2xl border border-dashed border-slate-300 bg-white/60 px-4 py-3 text-left font-semibold shadow-inner transition hover:border-slate-500"
+                >
+                  Delivery address
+                  <span className="text-slate-400">{">"}</span>
+                </button>
+                <button
+                  onClick={() => navigate("/account-management")}
+                  className="flex items-center justify-between rounded-2xl border border-dashed border-slate-300 bg-white/60 px-4 py-3 text-left font-semibold shadow-inner transition hover:border-slate-500"
+                >
+                  Account settings
+                  <span className="text-slate-400">{">"}</span>
+                </button>
+                <button
+                  onClick={() => navigate("/orders")}
+                  className="flex items-center justify-between rounded-2xl border border-dashed border-slate-300 bg-white/60 px-4 py-3 text-left font-semibold shadow-inner transition hover:border-slate-500"
+                >
+                  Order history
+                  <span className="text-slate-400">{">"}</span>
+                </button>
+                <button
+                  onClick={() => navigate("/delete-account")}
+                  className="flex items-center justify-between rounded-2xl border border-dashed border-red-300 bg-red-50 px-4 py-3 text-left font-semibold text-red-700 shadow-inner transition hover:border-red-400"
+                >
+                  Delete account
+                  <span className="text-red-400">{">"}</span>
+                </button>
+              </div>
+            </div>
+          </main>
+
+          <footer className="border-t border-white/50 px-6 py-5">
+            <button
+              onClick={handleLogout}
+              className="w-full rounded-2xl border border-red-500 bg-red-500/90 px-4 py-3 text-sm font-semibold text-white transition hover:bg-red-600"
+            >
+              Logout
+            </button>
+          </footer>
         </div>
-
-        <button
-          onClick={() => navigate("/")}
-          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-        >
-          Home
-        </button>
-      </header>
-
-      {/* Body */}
-      <main className="flex-grow">
-        <ul className="space-y-4">
-          <li
-            onClick={() => navigate("/orders")}
-            className="flex justify-between items-center p-4 bg-gray-100 rounded cursor-pointer hover:bg-gray-200"
-          >
-            <span>Orders</span>
-            <span>{">"}</span>
-          </li>
-          <li
-            onClick={() => navigate("/inbox")}
-            className="flex justify-between items-center p-4 bg-gray-100 rounded cursor-pointer hover:bg-gray-200"
-          >
-            <span>Inbox</span>
-            <span>{">"}</span>
-          </li>
-          <li
-            onClick={() => navigate("/address")}
-            className="flex justify-between items-center p-4 bg-gray-100 rounded cursor-pointer hover:bg-gray-200"
-          >
-            <span>Address</span>
-            <span>{">"}</span>
-          </li>
-          <li
-            onClick={() => navigate("/account-management")}
-            className="flex justify-between items-center p-4 bg-gray-100 rounded cursor-pointer hover:bg-gray-200"
-          >
-            <span>Account Management</span>
-            <span>{">"}</span>
-          </li>
-          <li
-            onClick={() => navigate("/delete-account")}
-            className="flex justify-between items-center p-4 bg-red-100 text-red-700 rounded cursor-pointer hover:bg-red-200"
-          >
-            <span>Delete Account</span>
-            <span>{">"}</span>
-          </li>
-        </ul>
-      </main>
-
-      {/* Footer */}
-      <footer className="mt-6">
-        <button
-          onClick={handleLogout}
-          className="w-full bg-red-500 text-white py-2 rounded hover:bg-red-600"
-        >
-          Logout
-        </button>
-      </footer>
+      </div>
     </div>
   );
 }

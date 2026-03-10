@@ -5,7 +5,7 @@ import { getCart } from "../services/productService";
 
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL
   ? import.meta.env.VITE_API_BASE_URL.replace(/\/$/, "")
-  : "http://localhost:5000";
+  : "https://tajii-server-production.up.railway.app";
 const initializePaymentUrl = `${apiBaseUrl}/api/payment/initialize`;
 
 export default function PaymentPage() {
@@ -105,15 +105,14 @@ export default function PaymentPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          phone: profilePhone,
-          customerName,
-          customerEmail,
-          deliveryInfo: {
-            ...deliveryInfo,
-            deliveryPrice: deliveryFee,
-          },
-          cartItems,
-        }),
+  customer_name: customerName,
+  customer_email: customerEmail,
+  customer_phone: profilePhone,
+  delivery_address: deliveryInfo.address,
+  delivery_city: deliveryInfo.city,
+  total_amount: payableTotal,
+  items: cartItems
+}),
       });
 
       const data = await res.json().catch(() => ({}));
@@ -122,7 +121,7 @@ export default function PaymentPage() {
       }
 
       // Redirect user to Paystack checkout
-      window.location.href = data.authorization_url;
+      window.location.href = data.payment_url;
     } catch (err) {
       console.error(err);
       setError(err.message || "Payment failed. Please try again.");
