@@ -3,10 +3,10 @@ import { useState } from "react";
 import { supabase } from "../supabaseClient";
 import { getCart } from "../services/productService";
 
-const apiBaseUrl = (import.meta.env.VITE_API_BASE_URL || "").replace(/\/$/, "");
-const initializePaymentUrl = apiBaseUrl
-  ? `${apiBaseUrl}/api/payments/initialize`
-  : "/api/payments/initialize";
+const apiBaseUrl = import.meta.env.VITE_API_BASE_URL
+  ? import.meta.env.VITE_API_BASE_URL.replace(/\/$/, "")
+  : "http://localhost:5000";
+const initializePaymentUrl = `${apiBaseUrl}/api/payment/initialize`;
 
 export default function PaymentPage() {
   const location = useLocation();
