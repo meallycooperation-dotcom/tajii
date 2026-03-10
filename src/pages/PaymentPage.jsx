@@ -69,7 +69,11 @@ export default function PaymentPage() {
         session.user.user_metadata?.full_name ||
         session.user.email ||
         "Customer";
-      const customerEmail = session.user.email || "";
+      const customerEmail =
+        session.user.email ||
+        userProfile?.email ||
+        session.user.user_metadata?.email ||
+        "";
 
       if (!Array.isArray(cartItems) || cartItems.length === 0) {
         setError("Your cart is empty.");
