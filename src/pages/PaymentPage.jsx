@@ -120,6 +120,11 @@ export default function PaymentPage() {
         throw new Error(data?.message || "Payment initialization failed.");
       }
 
+      if (!data?.payment_url) {
+        console.error("Missing payment_url:", data);
+        throw new Error("Unable to prepare the checkout. Please try again.");
+      }
+
       // Redirect user to Paystack checkout
       window.location.href = data.payment_url;
     } catch (err) {
