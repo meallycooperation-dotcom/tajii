@@ -119,10 +119,10 @@ export default function Profile() {
                   <span className="text-slate-400">{">"}</span>
                 </button>
                 <button
-                  onClick={() => navigate("/orders")}
+                  onClick={() => navigate("/support")}
                   className="flex items-center justify-between rounded-2xl border border-dashed border-slate-300 bg-white/60 px-4 py-3 text-left font-semibold shadow-inner transition hover:border-slate-500"
                 >
-                  Order history
+                  Support
                   <span className="text-slate-400">{">"}</span>
                 </button>
                 <button

@@ -35,10 +35,12 @@ export default function SignupForm() {
     setError("");
 
     if (form.password !== form.confirmPassword) {
-      return setError("Passwords do not match");
+      setError("Passwords do not match");
+      return;
     }
     if (!form.terms) {
-      return setError("You must accept terms and conditions");
+      setError("You must accept terms and conditions");
+      return;
     }
 
     try {
@@ -70,73 +72,105 @@ export default function SignupForm() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 px-6 py-10">
-      <div className="relative w-full max-w-lg rounded-3xl border border-white/10 bg-slate-900/80 shadow-2xl overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-slate-900/70 to-slate-800 opacity-60 pointer-events-none" />
-        <div className="relative p-10 space-y-6">
-          <div className="space-y-2">
-            <p className="text-xs uppercase tracking-[0.4em] text-slate-500">Create account</p>
-            <h1 className="text-3xl font-semibold text-white">Sign up</h1>
-            <p className="text-sm text-slate-400">
-              Join Tajii to track orders, save addresses and checkout faster.
-            </p>
-          </div>
-
-          {error && (
-            <div className="rounded-2xl border border-red-500/50 bg-red-500/10 px-3 py-2 text-sm text-red-200">
-              {error}
+    <main className="bg-white px-4 py-10 text-slate-900">
+      <div className="mx-auto max-w-4xl">
+        <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white/80 shadow-2xl shadow-slate-200/50 backdrop-blur-sm">
+          <header className="flex flex-col gap-4 px-8 py-10 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="text-xs uppercase tracking-[0.5em] text-slate-500">Account</p>
+              <h1 className="text-3xl font-bold text-slate-900">Create account</h1>
+              <p className="text-sm text-slate-600">
+                Join Tajii to track orders, save addresses, and checkout faster.
+              </p>
             </div>
-          )}
+            <div className="flex items-center gap-3">
+              <Link
+                to="/"
+                className="rounded-full border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:text-slate-900"
+              >
+                Home
+              </Link>
+              <Link
+                to="/login"
+                className="rounded-full bg-slate-900/90 px-4 py-2 text-xs font-semibold uppercase tracking-[0.4em] text-white transition hover:bg-slate-900"
+              >
+                Sign in
+              </Link>
+            </div>
+          </header>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid gap-4 md:grid-cols-2">
-              {inputs.map((input) => (
+          <section className="space-y-6 px-6 pb-10">
+            {error && (
+              <div className="rounded-2xl border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-700">
+                {error}
+              </div>
+            )}
+
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="grid gap-4 sm:grid-cols-2">
+                {inputs.map((input) => (
+                  <input
+                    key={input.name}
+                    name={input.name}
+                    type={input.type}
+                    placeholder={input.label}
+                    required
+                    onChange={handleChange}
+                    className="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 shadow-inner focus:border-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900/20"
+                  />
+                ))}
+              </div>
+
+              <select
+                name="gender"
+                required
+                value={form.gender}
+                onChange={handleChange}
+                className="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 shadow-inner focus:border-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900/20"
+              >
+                <option value="">Select Gender</option>
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+                <option value="other">Other</option>
+              </select>
+
+              <label className="flex items-start gap-3 rounded-2xl border border-slate-200 bg-white/70 px-4 py-3 text-sm text-slate-700 shadow-inner">
                 <input
-                  key={input.name}
-                  name={input.name}
-                  type={input.type}
-                  placeholder={input.label}
-                  required
-                  className="input w-full bg-slate-800 text-white border-slate-700 focus:border-sky-400 focus:ring-sky-400"
+                  type="checkbox"
+                  name="terms"
+                  checked={form.terms}
                   onChange={handleChange}
+                  className="mt-0.5 h-4 w-4 rounded border-slate-300"
                 />
-              ))}
-            </div>
+                <span>
+                  I accept the{" "}
+                  <Link to="/terms" className="font-semibold text-slate-900 hover:underline">
+                    Terms
+                  </Link>
+                  .
+                </span>
+              </label>
 
-            <select
-              name="gender"
-              required
-              onChange={handleChange}
-              className="input w-full bg-slate-800 text-white border-slate-700 focus:border-sky-400 focus:ring-sky-400"
-            >
-              <option value="">Select Gender</option>
-              <option value="male">Male</option>
-              <option value="female">Female</option>
-              <option value="other">Other</option>
-            </select>
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full rounded-2xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:opacity-60"
+              >
+                {loading ? "Creating account..." : "Sign Up"}
+              </button>
+            </form>
 
-            <label className="flex items-center gap-2 text-sm text-slate-400">
-              <input type="checkbox" name="terms" className="h-4 w-4 rounded border-slate-700 bg-slate-800" onChange={handleChange} />
-              I accept the <Link to="/terms" className="underline text-emerald-300">Terms</Link>
-            </label>
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="btn-primary w-full bg-gradient-to-r from-emerald-500 to-sky-500 text-base shadow-lg shadow-emerald-500/30"
-            >
-              {loading ? "Creating account..." : "Sign Up"}
-            </button>
-          </form>
-
-          <p className="text-sm text-slate-400">
-            Already have an account?{" "}
-            <Link to="/login" className="text-emerald-300 hover:text-emerald-200">
-              Login
-            </Link>
-          </p>
+            <p className="text-sm text-slate-600">
+              Already have an account?{" "}
+              <Link to="/login" className="font-semibold text-slate-900 hover:underline">
+                Login
+              </Link>
+              .
+            </p>
+          </section>
         </div>
       </div>
-    </div>
+    </main>
   );
 }
+

@@ -14,6 +14,7 @@ import Inbox from "./pages/Inbox";
 import Address from "./pages/Address";
 import AccountManagement from "./pages/AccountManagement";
 import DeleteAccount from "./pages/DeleteAccount";
+import Support from "./pages/Support";
 import NotFound from "./pages/NotFound";
 
 // Checkout Flow Pages
@@ -90,6 +91,14 @@ export default function App() {
           element={
             <ProtectedRoute>
               <DeleteAccount />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/support"
+          element={
+            <ProtectedRoute>
+              <Support />
             </ProtectedRoute>
           }
         />

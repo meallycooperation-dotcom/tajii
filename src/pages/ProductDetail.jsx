@@ -3,7 +3,12 @@ import { useParams } from "react-router-dom";
 import SEO from "../components/common/SEO";
 import Navbar from "../components/common/Navbar";
 import ProductCard from "../components/product/ProductCard";
-import { getProductBySlug, getRelatedProducts, addToCart } from "../services/productService";
+import { supabase } from "../supabaseClient";
+import {
+  getProductBySlug,
+  getRelatedProducts,
+  addToCart,
+} from "../services/productService";
 
 export default function ProductDetail() {
   const { slug } = useParams();
@@ -11,7 +16,9 @@ export default function ProductDetail() {
   const [related, setRelated] = useState([]);
   const [loading, setLoading] = useState(true);
   const [added, setAdded] = useState(false);
+  const [additionalImages, setAdditionalImages] = useState([]);
 
+  // Fetch product & related products
   useEffect(() => {
     if (!slug) return;
 
@@ -29,6 +36,33 @@ export default function ProductDetail() {
     fetchProduct();
   }, [slug]);
 
+  // Fetch additional images from Supabase bucket
+  useEffect(() => {
+    if (!product) return undefined;
+
+    const fetchAdditionalImages = async () => {
+      if (!product.images || product.images.length === 0) return;
+      const urls = [];
+
+      for (let imgPath of product.images) {
+        // If it's already a full URL (from publicUrl), just use it
+        if (imgPath.startsWith("http")) {
+          urls.push(imgPath);
+        } else {
+          // Otherwise, build public URL from Supabase bucket
+          const { publicUrl } = supabase.storage
+            .from("products")
+            .getPublicUrl(`additional-images/${imgPath}`);
+          urls.push(publicUrl);
+        }
+      }
+
+      setAdditionalImages(urls);
+    };
+
+    fetchAdditionalImages();
+  }, [product]);
+
   const handleAddToCart = () => {
     addToCart(product);
     setAdded(true);
@@ -36,6 +70,12 @@ export default function ProductDetail() {
 
   if (loading) return <p className="p-4">Loading...</p>;
   if (!product) return <p className="p-4">Product not found.</p>;
+
+  // Main image
+  const mainImageUrl =
+    product.image_url?.startsWith("http")
+      ? product.image_url
+      : supabase.storage.from("products").getPublicUrl(`main-images/${product.image_url}`).publicUrl;
 
   return (
     <>
@@ -52,7 +92,7 @@ export default function ProductDetail() {
           {/* Product Image */}
           <div className="flex-1">
             <img
-              src={product.image_url}
+              src={mainImageUrl || "/placeholder.png"}
               alt={product.name}
               className="w-full h-96 object-cover rounded-lg"
             />
@@ -61,7 +101,9 @@ export default function ProductDetail() {
           {/* Product Info */}
           <div className="flex-1 flex flex-col gap-4">
             <h1 className="text-2xl font-bold">{product.name}</h1>
-            <p className="text-xl text-slate-700">Ksh {product.price}</p>
+            <p className="text-xl text-slate-700">
+              Ksh {Number(product.price).toLocaleString()}
+            </p>
             <p className="text-slate-600">{product.description}</p>
 
             <button
@@ -75,6 +117,23 @@ export default function ProductDetail() {
             </button>
           </div>
         </div>
+
+        {/* Additional Images */}
+        {additionalImages.length > 0 && (
+          <section className="mt-8">
+            <h2 className="text-lg font-semibold mb-4">More photos</h2>
+            <div className="grid gap-4 md:grid-cols-3">
+              {additionalImages.map((url, i) => (
+                <img
+                  key={i}
+                  src={url || "/placeholder.png"}
+                  alt={`${product.name} additional`}
+                  className="h-48 w-full rounded-lg object-cover bg-slate-100"
+                />
+              ))}
+            </div>
+          </section>
+        )}
 
         {/* Related Products */}
         {related.length > 0 && (

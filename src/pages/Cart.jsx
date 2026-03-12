@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Navbar from "../components/common/Navbar";
-import { getCart } from "../services/productService";
+import { getCart, getProductMainImageUrl } from "../services/productService";
 
 export default function Cart() {
   const [cartItems, setCartItems] = useState(() => getCart());
@@ -47,7 +47,7 @@ export default function Cart() {
                   className="flex items-center gap-4 border-b pb-4"
                 >
                   <img
-                    src={item.image_url}
+                    src={getProductMainImageUrl(item) || item.image_url || ""}
                     alt={item.name}
                     className="w-20 h-20 object-cover rounded"
                   />

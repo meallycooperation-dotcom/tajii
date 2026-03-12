@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useLocation } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { supabase } from "../supabaseClient";
 import { getCart } from "../services/productService";
 
@@ -191,9 +191,20 @@ export default function PaymentPage() {
             </p>
           )}
           {error && (
-            <p className="mt-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600">
-              {error}
-            </p>
+            <div className="mt-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <p className="text-sm text-red-600">{error}</p>
+                {!sessionUser &&
+                  /log\\s*in|login/i.test(error) && (
+                    <Link
+                      to="/login"
+                      className="inline-flex items-center justify-center rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-800"
+                    >
+                      Go to Login
+                    </Link>
+                  )}
+              </div>
+            </div>
           )}
           <button
             onClick={handlePayment}

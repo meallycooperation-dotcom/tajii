@@ -3,7 +3,7 @@ import { useParams } from "react-router-dom";
 import SEO from "../components/common/SEO";
 import Navbar from "../components/common/Navbar";
 import ProductCard from "../components/product/ProductCard";
-import { getProductsByCategory } from "../services/productService"; // ✅ correct import
+import { getProductsByCategorySlug } from "../services/productService";
 
 export default function CategoryPage() {
   const { slug } = useParams();
@@ -13,11 +13,22 @@ export default function CategoryPage() {
   useEffect(() => {
     if (!slug) return;
 
-    // convert slug to category name (replace hyphens with spaces)
-    const categoryName = slug.replace(/-/g, " ");
-    getProductsByCategory(categoryName) // ✅ fetch only this category
-      .then(setProducts)
-      .finally(() => setLoading(false));
+    let cancelled = false;
+    Promise.resolve().then(() => {
+      if (!cancelled) setLoading(true);
+    });
+
+    getProductsByCategorySlug(slug)
+      .then((data) => {
+        if (!cancelled) setProducts(data);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
   }, [slug]);
 
   return (

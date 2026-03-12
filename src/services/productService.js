@@ -1,6 +1,17 @@
 // src/services/productService.js
 import { supabase } from "../supabaseClient";
 
+const PRODUCT_BUCKET = "products";
+const MAIN_IMAGE_FOLDER = "main-images";
+const ADDITIONAL_IMAGE_FOLDER = "additional-images";
+
+function categoryToSlug(category) {
+  return String(category ?? "")
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, "-");
+}
+
 // =======================
 // Categories & Products
 // =======================
@@ -17,24 +28,37 @@ export async function getCategoriesWithProductsDynamic() {
 
     if (catError) throw catError;
 
-    // Get unique categories
-    const uniqueCategories = [...new Set(categories.map(c => c.category))];
+    // Group DB category values by slug to handle case/whitespace inconsistencies.
+    const slugToCategoryValues = new Map();
+    for (const row of categories || []) {
+      const value = row?.category;
+      if (typeof value !== "string" || !value.trim()) continue;
+      const slug = categoryToSlug(value);
+      if (!slug) continue;
+      if (!slugToCategoryValues.has(slug)) {
+        slugToCategoryValues.set(slug, new Set());
+      }
+      slugToCategoryValues.get(slug).add(value);
+    }
 
     // Fetch products per category
     const result = await Promise.all(
-      uniqueCategories.map(async (cat) => {
+      [...slugToCategoryValues.entries()].map(async ([slug, categoryValues]) => {
+        const values = [...categoryValues];
         const { data: products, error: prodError } = await supabase
           .from("products")
           .select("*")
-          .eq("category", cat);
+          .in("category", values);
 
         if (prodError) throw prodError;
 
-        return { name: cat, slug: cat.toLowerCase().replace(/\s+/g, "-"), products };
+        const displayName =
+          values.find((v) => typeof v === "string" && v.trim())?.trim() || slug;
+        return { name: displayName, slug, products };
       })
     );
 
-    return result;
+    return result.sort((a, b) => a.name.localeCompare(b.name));
   } catch (err) {
     console.error("Error fetching categories:", err);
     return [];
@@ -57,6 +81,49 @@ export async function getProductsByCategory(categoryName, limit = 100) {
     return data;
   } catch (err) {
     console.error(err);
+    return [];
+  }
+}
+
+// Fetch all products for a category slug (robust to case/whitespace differences)
+export async function getProductsByCategorySlug(slug, limit = 100) {
+  const normalizedSlug = categoryToSlug(slug);
+  if (!normalizedSlug) return [];
+
+  try {
+    const { data: rows, error: catError } = await supabase
+      .from("products")
+      .select("category")
+      .neq("category", null);
+
+    if (catError) throw catError;
+
+    const matchingCategories = [
+      ...new Set(
+        (rows || [])
+          .map((r) => r.category)
+          .filter((c) => typeof c === "string" && categoryToSlug(c) === normalizedSlug)
+      ),
+    ];
+
+    if (matchingCategories.length === 0) {
+      return [];
+    }
+
+    const { data, error } = await supabase
+      .from("products")
+      .select("*")
+      .in("category", matchingCategories)
+      .limit(limit);
+
+    if (error) {
+      console.error("Error fetching products by category slug:", error);
+      return [];
+    }
+
+    return data || [];
+  } catch (err) {
+    console.error("Error fetching products by category slug:", err);
     return [];
   }
 }
@@ -104,6 +171,86 @@ export async function getRelatedProducts(category, excludeId, limit = 10) {
     console.error(err);
     return [];
   }
+}
+
+function isAbsoluteUrl(value) {
+  return typeof value === "string" && /^https?:\/\//i.test(value);
+}
+
+function stripFilename(value) {
+  if (!value) return "";
+  if (typeof value === "string") {
+    const parts = value.split("/").filter(Boolean);
+    return parts.length ? parts[parts.length - 1] : "";
+  }
+  return "";
+}
+
+function getStoragePublicUrl(path) {
+  if (!path) return "";
+  const { data } = supabase.storage.from(PRODUCT_BUCKET).getPublicUrl(path);
+  return data?.publicUrl || "";
+}
+
+export function getProductMainImageUrl(product) {
+  if (!product) return "";
+  const candidates = [
+    product.main_image,
+    product.image,
+    product.image_url,
+    product.image_path,
+    product.slug,
+    product.id,
+  ];
+  const candidate = candidates.find((value) => Boolean(value));
+  if (!candidate) return "";
+
+  // If the DB already stores a public URL (e.g. Supabase storage public URL),
+  // use it as-is. Reconstructing a path can break images for products uploaded
+  // into other folders like `public/`.
+  if (isAbsoluteUrl(candidate)) {
+    return candidate;
+  }
+
+  // If we stored a storage path like `public/...` or `main-images/...`, resolve it.
+  if (typeof candidate === "string") {
+    const trimmed = candidate.trim();
+    if (
+      trimmed.startsWith("public/") ||
+      trimmed.startsWith(`${MAIN_IMAGE_FOLDER}/`)
+    ) {
+      return getStoragePublicUrl(trimmed);
+    }
+  }
+
+  const fileName = stripFilename(candidate);
+  if (!fileName) {
+    return "";
+  }
+
+  return getStoragePublicUrl(`${MAIN_IMAGE_FOLDER}/${fileName}`);
+}
+
+export async function getAdditionalProductImages(product) {
+  if (!product) return [];
+  const folderKey = product.slug || product.id;
+  if (!folderKey) return [];
+  const folderPath = `${ADDITIONAL_IMAGE_FOLDER}/${folderKey}`;
+
+  const { data, error } = await supabase.storage.from(PRODUCT_BUCKET).list(folderPath, {
+    limit: 50,
+    offset: 0,
+    sortBy: { column: "name", order: "asc" },
+  });
+
+  if (error) {
+    console.error("Error fetching additional images:", error);
+    return [];
+  }
+
+  return data
+    .map((file) => getStoragePublicUrl(`${folderPath}/${file.name}`))
+    .filter(Boolean);
 }
 
 // =======================

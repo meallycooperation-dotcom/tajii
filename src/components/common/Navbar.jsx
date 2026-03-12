@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { ShoppingCart, User, Search, X } from "lucide-react";
+import { Home, ShoppingCart, User, Search, X } from "lucide-react";
 import { getCart } from "../../services/productService";
 
 export default function Navbar({ onSearch }) {
@@ -60,6 +60,9 @@ export default function Navbar({ onSearch }) {
 
         {/* Cart & Account */}
         <div className="flex items-center gap-4">
+          <Link to="/" aria-label="Home" className="p-1 rounded hover:bg-slate-100">
+            <Home className="h-5 w-5" />
+          </Link>
           <Link to="/cart" aria-label="Cart" className="relative p-1 rounded hover:bg-slate-100">
             <ShoppingCart className="h-5 w-5" />
             {cartCount > 0 && (

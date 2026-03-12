@@ -19,6 +19,35 @@ export default function LocationSelect() {
   // Fetch delivery locations from Supabase on mount
   useEffect(() => {
     const fetchLocations = async () => {
+      let saved = null;
+      try {
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
+
+        if (session?.user) {
+          const { data: profile } = await supabase
+            .from("profiles")
+            .select("id")
+            .eq("user_id", session.user.id)
+            .single();
+
+          if (profile?.id) {
+            const { data: savedRows } = await supabase
+              .from("saved_locations")
+              .select("address, city, updated_at")
+              .eq("user_id", profile.id)
+              .eq("is_default", true)
+              .order("updated_at", { ascending: false })
+              .limit(1);
+
+            saved = savedRows?.[0] || null;
+          }
+        }
+      } catch (err) {
+        console.error("Error loading saved location:", err);
+      }
+
       const { data, error } = await supabase
         .from("delivery_locations") // your table name
         .select("*")
@@ -28,6 +57,18 @@ export default function LocationSelect() {
         console.error("Error fetching locations:", error.message);
       } else {
         setLocations(data);
+        setForm((prev) => {
+          const defaultCityId = data?.length ? String(data[0].id) : "";
+          const savedMatch = saved?.city
+            ? data?.find((loc) => String(loc.name) === String(saved.city))
+            : null;
+          return {
+            ...prev,
+            address: saved?.address || prev.address,
+            region: prev.region,
+            city: savedMatch?.id ? String(savedMatch.id) : prev.city || defaultCityId,
+          };
+        });
       }
     };
 
