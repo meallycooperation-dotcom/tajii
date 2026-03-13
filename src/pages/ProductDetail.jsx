@@ -6,6 +6,7 @@ import ProductCard from "../components/product/ProductCard";
 import { supabase } from "../supabaseClient";
 import {
   getProductBySlug,
+  getProductMainImageUrl,
   getRelatedProducts,
   addToCart,
 } from "../services/productService";
@@ -72,17 +73,31 @@ export default function ProductDetail() {
   if (!product) return <p className="p-4">Product not found.</p>;
 
   // Main image
-  const mainImageUrl =
-    product.image_url?.startsWith("http")
-      ? product.image_url
-      : supabase.storage.from("products").getPublicUrl(`main-images/${product.image_url}`).publicUrl;
+  const mainImageUrl = getProductMainImageUrl(product);
+  const productUrl = `https://tajii.com/product/${product.slug}`;
 
   return (
     <>
       <SEO
         title={`Tajii – ${product.name}`}
         description={product.description}
-        url={`https://tajii.com/product/${product.slug}`}
+        url={productUrl}
+        image={mainImageUrl || "/og-image.svg"}
+        type="product"
+        jsonLd={{
+          "@context": "https://schema.org",
+          "@type": "Product",
+          name: product.name,
+          description: product.description,
+          image: mainImageUrl ? [mainImageUrl] : undefined,
+          sku: String(product.id ?? ""),
+          offers: {
+            "@type": "Offer",
+            url: productUrl,
+            priceCurrency: "KES",
+            price: String(product.price ?? ""),
+          },
+        }}
       />
 
       <Navbar />

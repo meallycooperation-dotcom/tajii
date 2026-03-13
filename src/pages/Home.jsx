@@ -212,6 +212,21 @@ export default function Home() {
         title="Tajii – Buy Electronics Online"
         description="Shop electronics online at Tajii."
         url="https://tajii.com"
+        image="/og-image.svg"
+        jsonLd={[
+          {
+            "@context": "https://schema.org",
+            "@type": "Organization",
+            name: "Tajii",
+            url: "https://tajii.com",
+          },
+          {
+            "@context": "https://schema.org",
+            "@type": "WebSite",
+            name: "Tajii",
+            url: "https://tajii.com",
+          },
+        ]}
       />
 
       <Navbar onSearch={handleSearch} />

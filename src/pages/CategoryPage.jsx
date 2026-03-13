@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import SEO from "../components/common/SEO";
 import Navbar from "../components/common/Navbar";
@@ -9,6 +9,10 @@ export default function CategoryPage() {
   const { slug } = useParams();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  const categoryName = useMemo(() => {
+    return slug ? slug.replace(/-/g, " ") : "Category";
+  }, [slug]);
 
   useEffect(() => {
     if (!slug) return;
@@ -34,15 +38,23 @@ export default function CategoryPage() {
   return (
     <>
       <SEO
-        title={`Tajii – ${slug.replace(/-/g, " ")}`}
-        description={`All products in ${slug.replace(/-/g, " ")}`}
-        url={`https://tajii.com/category/${slug}`}
+        title={`Tajii – ${categoryName}`}
+        description={`Browse ${categoryName} products on Tajii.`}
+        url={slug ? `https://tajii.com/category/${slug}` : "https://tajii.com"}
+        image="/og-image.svg"
+        type="website"
+        jsonLd={{
+          "@context": "https://schema.org",
+          "@type": "CollectionPage",
+          name: categoryName,
+          url: slug ? `https://tajii.com/category/${slug}` : "https://tajii.com",
+        }}
       />
 
       <Navbar />
 
       <main className="mx-auto max-w-7xl px-4 py-6">
-        <h1 className="text-2xl font-bold mb-4">{slug.replace(/-/g, " ")}</h1>
+        <h1 className="mb-4 text-2xl font-bold">{categoryName}</h1>
 
         {loading ? (
           <p>Loading products...</p>
@@ -59,3 +71,4 @@ export default function CategoryPage() {
     </>
   );
 }
+
