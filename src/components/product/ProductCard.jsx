@@ -1,5 +1,4 @@
 import { Link } from "react-router-dom";
-import { supabase } from "../../supabaseClient";
 
 export default function ProductCard({ product }) {
   // Determine image URL: use image_url if present, otherwise build from Supabase bucket
