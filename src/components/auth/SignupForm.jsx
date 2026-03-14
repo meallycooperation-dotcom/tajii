@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "../../supabaseClient";
 import { useNavigate, Link } from "react-router-dom";
 
@@ -14,7 +14,6 @@ export default function SignupForm() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-
   const [form, setForm] = useState({
     full_name: "",
     phone: "",
@@ -30,14 +29,52 @@ export default function SignupForm() {
     setForm((prev) => ({ ...prev, [name]: type === "checkbox" ? checked : value }));
   };
 
+  // Monitor user login after magic link click
+  useEffect(() => {
+    const { data: listener } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === "SIGNED_IN" && session?.user) {
+        const user = session.user;
+
+        // Check if profile exists
+        const { data: existingProfiles } = await supabase
+          .from("profiles")
+          .select("*")
+          .eq("user_id", user.id)
+          .limit(1);
+
+        if (!existingProfiles?.length) {
+          // Insert profile after user confirms via magic link
+          await supabase.from("profiles").insert({
+            user_id: user.id,
+            full_name: form.full_name,
+            phone: form.phone,
+            gender: form.gender,
+            email: user.email,
+          });
+        }
+
+        // Navigate to home screen
+        navigate("/home");
+      }
+    });
+
+    return () => {
+      listener.subscription.unsubscribe();
+    };
+  }, [form.full_name, form.phone, form.gender, navigate]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
 
-    if (form.password !== form.confirmPassword) {
-      setError("Passwords do not match");
-      return;
+    // Password matching check if user enters a password
+    if (form.password || form.confirmPassword) {
+      if (form.password !== form.confirmPassword) {
+        setError("Passwords do not match");
+        return;
+      }
     }
+
     if (!form.terms) {
       setError("You must accept terms and conditions");
       return;
@@ -45,25 +82,20 @@ export default function SignupForm() {
 
     try {
       setLoading(true);
-      const { data, error: authError } = await supabase.auth.signUp({
+
+      // Use magic link for signup
+      const { error: authError } = await supabase.auth.signInWithOtp({
         email: form.email,
-        password: form.password,
+        options: {
+          emailRedirectTo: "https://tajii.vercel.app/home", // redirect after magic link
+        },
       });
-      if (authError) throw authError;
 
-      const user = data.user;
-      if (!user) throw new Error("User creation failed");
-
-      const { error: profileError } = await supabase.from("profiles").insert({
-        user_id: user.id,
-        full_name: form.full_name,
-        phone: form.phone,
-        gender: form.gender,
-        email: form.email,
-      });
-      if (profileError) throw profileError;
-
-      navigate("/account");
+      // inside handleSubmit in SignupForm
+if (!authError) {
+  // Navigate to EmailSent page
+  navigate("/email-sent");
+}
     } catch (err) {
       setError(err.message);
     } finally {
@@ -114,7 +146,7 @@ export default function SignupForm() {
                     name={input.name}
                     type={input.type}
                     placeholder={input.label}
-                    required
+                    required={input.name !== "password" && input.name !== "confirmPassword"} // magic link ignores password
                     onChange={handleChange}
                     className="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 shadow-inner focus:border-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900/20"
                   />
@@ -156,7 +188,7 @@ export default function SignupForm() {
                 disabled={loading}
                 className="w-full rounded-2xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:opacity-60"
               >
-                {loading ? "Creating account..." : "Sign Up"}
+                {loading ? "Sending magic link..." : "Sign Up"}
               </button>
             </form>
 
@@ -173,4 +205,3 @@ export default function SignupForm() {
     </main>
   );
 }
-

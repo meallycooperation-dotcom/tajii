@@ -16,6 +16,7 @@ import AccountManagement from "./pages/AccountManagement";
 import DeleteAccount from "./pages/DeleteAccount";
 import Support from "./pages/Support";
 import NotFound from "./pages/NotFound";
+import EmailSent from "./pages/EmailSent";
 
 // Checkout Flow Pages
 import LocationSelect from "./pages/LocationSelect";
@@ -36,6 +37,7 @@ export default function App() {
         <Route path="/cart" element={<Cart />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
+        <Route path="/email-sent" element={<EmailSent />} />
 
         {/* Protected routes */}
         <Route
