@@ -18,6 +18,7 @@ export default function ProductDetail() {
   const [loading, setLoading] = useState(true);
   const [added, setAdded] = useState(false);
   const [additionalImages, setAdditionalImages] = useState([]);
+  const [showFullDescription, setShowFullDescription] = useState(false);
 
   // Fetch product & related products
   useEffect(() => {
@@ -119,7 +120,22 @@ export default function ProductDetail() {
             <p className="text-xl text-slate-700">
               Ksh {Number(product.price).toLocaleString()}
             </p>
-            <p className="text-slate-600">{product.description}</p>
+            <p className="text-slate-600">
+  {showFullDescription
+    ? product.description
+    : product.description.length > 200
+    ? product.description.slice(0, 200) + "..."
+    : product.description}
+</p>
+
+{product.description.length > 200 && (
+  <button
+    className="text-sm text-blue-600 hover:underline mt-1"
+    onClick={() => setShowFullDescription(!showFullDescription)}
+  >
+    {showFullDescription ? "Show less" : "Read more"}
+  </button>
+)}
 
             <button
               className={`bg-slate-900 text-white px-4 py-2 rounded hover:bg-slate-700 mt-4 ${
