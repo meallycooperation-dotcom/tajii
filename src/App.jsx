@@ -1,4 +1,6 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
+import { useEffect } from "react";
+import { trackPageView } from "./utils/analytics";
 
 // Pages
 import Home from "./pages/Home";
@@ -26,9 +28,27 @@ import ConfirmationPage from "./pages/ConfirmationPage";
 // Auth
 import ProtectedRoute from "./components/common/ProtectedRoute";
 
+/*
+  Analytics tracker component
+  Runs inside Router so useLocation works correctly
+*/
+function AnalyticsTracker() {
+  const location = useLocation();
+
+  useEffect(() => {
+    trackPageView(location.pathname + location.search);
+  }, [location]);
+
+  return null;
+}
+
 export default function App() {
   return (
     <Router>
+
+      {/* Google Analytics Page Tracking */}
+      <AnalyticsTracker />
+
       <Routes>
         {/* Public routes */}
         <Route path="/" element={<Home />} />
