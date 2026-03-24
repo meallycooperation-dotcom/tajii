@@ -4,11 +4,6 @@
   functions = "netlify/functions"
 
 [[redirects]]
-  from = "/*"
-  to = "/index.html"
-  status = 200
-
-[[redirects]]
   from = "/api/payments/initialize"
   to = "/.netlify/functions/payments-initialize"
   status = 200
@@ -16,4 +11,9 @@
 [[redirects]]
   from = "/api/webhooks/paystack"
   to = "/.netlify/functions/paystack-webhook"
+  status = 200
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
   status = 200
